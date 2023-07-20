@@ -8,7 +8,7 @@ pyrogram
 tgcrypto
 
 # 数据库
-sqlalchemy[asyncio] >1.4, <2.0
+sqlalchemy[asyncio]
 asyncpg
 
 # 配置文件

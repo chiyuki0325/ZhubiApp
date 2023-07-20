@@ -14,6 +14,9 @@ import context
 from settings import settings, app_version
 from database.database import Database
 from handlers import client_message_handler
+from routers import (
+    misc
+)
 
 # 外部模块
 import os
@@ -23,6 +26,10 @@ import richuru
 
 api = FastAPI()
 
+for router_module in [
+        misc
+]:
+    api.include_router(router_module.router)
 
 # noinspection PyUnresolvedReferences
 @api.on_event('startup')
@@ -59,7 +66,6 @@ async def startup_event():
         )
 
     await context.client.start()
-
 
 
 def main():

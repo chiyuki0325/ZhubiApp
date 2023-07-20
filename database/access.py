@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
 from pyrogram.types import (
-    Message as PyrogramMessage
+    Message as PyrogramMessage,
+    User as PyrogramUser,
 )
 from pyrogram.enums import (
     MessageMediaType
@@ -29,10 +30,10 @@ class DatabaseAccess:
     async def flush(self):
         await self.session.flush()
 
-    async def get_chat_by_id(self, id: int) -> Chat | None:
+    async def get_chat_by_id(self, chat_id: int) -> Chat | None:
         # 在接收到新消息时获取聊天对象
         chat: Chat | None = (await self.session.execute(
-            select(Chat).where(Chat.id == id)
+            select(Chat).where(Chat.id == chat_id)
         )).scalars().first()
         return chat
 
@@ -74,9 +75,10 @@ class DatabaseAccess:
             elif (message.sticker is not None) or (message.media == MessageMediaType.STICKER):
                 # 贴纸
                 message_type = MessageType.sticker
-                sticker_obj = Sticker()
-                sticker_obj.file_id = message.sticker.file_id
-                sticker_obj.emoji = message.sticker.emoji
+                sticker_obj = Sticker(
+                    file_id=message.sticker.file_id,
+                    emoji=message.sticker.emoji
+                )
                 sticker = sticker_obj.model_dump(mode='json')
             else:
                 # 不支持的消息类型
@@ -132,7 +134,7 @@ class DatabaseAccess:
             tg_id=message.id,
             type=message_type,
             unsupported_type=unsupported_type,
-            sender_id=get_attr(message.user, 'id'),
+            sender_id=get_attr(message.from_user, 'id'),
             sender_chat_id=get_attr(message.sender_chat, 'id'),
             chat_id=message.chat.id,
             send_at=message.date,
@@ -152,4 +154,42 @@ class DatabaseAccess:
             forward_from_chat_name=get_attr(message.forward_from_chat, 'title')
         )
         self.session.add(message)
+        await self.flush()
+        return message
+
+    async def get_user_by_id(self, user_id: int) -> User | None:
+        # 获取用户对象
+        user: User | None = (await self.session.execute(
+            select(User).where(User.id == user_id)
+        )).scalars().first()
+        return user
+
+    async def save_new_user(self, user: PyrogramUser) -> User:
+        user: User = User(
+            id=user.id,
+            username=user.username,
+            is_bot=bool(user.is_bot),
+            is_premium=bool(user.is_premium),
+            first_name=user.first_name,
+            last_name=user.last_name,
+            box=user.phone_number,
+            photo_file_id=get_attr(user.photo, 'big_file_id'),
+            status=user.status,
+            last_online=user.last_online_date,
+        )
+        self.session.add(user)
+        await self.flush()
+        return user
+
+    async def touch_user(self, user: User, message: PyrogramMessage):
+        # 更新 user 的状态
+        user.status = message.from_user.status
+        user.last_online = message.from_user.last_online_date
+        if user.first_name != message.from_user.first_name:
+            user.first_name = message.from_user.first_name
+        if user.last_name != message.from_user.last_name:
+            user.last_name = message.from_user.last_name
+        if user.username != message.from_user.username:
+            user.username = message.from_user.username
+        self.session.add(user)
         await self.flush()

@@ -1,22 +1,25 @@
 # 此文件中定义着数据结构
 
 from database.database import Base
-from sqlalchemy import Column as Col
+from sqlalchemy import (
+    Column as Col,
+    BigInteger as Integer,
+    Enum as ColEnum
+)
 from sqlalchemy import UnicodeText, DateTime, Boolean, Text
-from sqlalchemy import BigInteger as Integer
 from sqlalchemy.dialects.postgresql import (
     JSON as Json
 )
 from enum import Enum as PythonEnum
-from sqlalchemy import Enum as ColEnum
-
 from pydantic import BaseModel
-
+from typing import Optional as Opt
 from pyrogram.enums import ChatType, UserStatus
 
 
 class Chat(Base):
     __tablename__ = "chats"
+    __mapper_args__ = {"eager_defaults": True}
+
     id = Col(Integer, primary_key=True)
 
     type = Col(ColEnum(ChatType))
@@ -34,6 +37,8 @@ class Chat(Base):
 
 class User(Base):
     __tablename__ = "users"
+    __mapper_args__ = {"eager_defaults": True}
+
     id = Col(Integer, primary_key=True)
 
     is_bot = Col(Boolean, default=False)
@@ -79,11 +84,13 @@ class SystemMessageType(PythonEnum):
 
 class Sticker(BaseModel):
     file_id: str
-    emoji: str
+    emoji: Opt[str]
 
 
 class Message(Base):
     __tablename__ = "messages"
+    __mapper_args__ = {"eager_defaults": True}
+
     id = Col(Integer, primary_key=True)
     tg_id = Col(Integer)
 
@@ -114,3 +121,4 @@ class Message(Base):
     forward_from_user_name = Col(UnicodeText, nullable=True)
     forward_from_chat_name = Col(UnicodeText, nullable=True)
     via_bot_username = Col(Text, nullable=True)
+

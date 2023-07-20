@@ -1,11 +1,18 @@
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    AsyncEngine,
+    AsyncAttrs,
+    create_async_engine,
+    async_sessionmaker
+)
+from sqlalchemy.orm import DeclarativeBase
 
 # 程序内模块
 from settings import settings
 
-Base = declarative_base()
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
 
 class Database:
@@ -16,10 +23,9 @@ class Database:
             url,
             echo=settings.loglevel == 'DEBUG'
         )
-        self.async_session: sessionmaker = sessionmaker(
+        self.async_session: async_sessionmaker[AsyncSession] = async_sessionmaker(
             self.engine,
-            expire_on_commit=False,
-            class_=AsyncSession
+            expire_on_commit=False
         )
 
     async def create_columns(self):

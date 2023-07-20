@@ -2,3 +2,9 @@ venv/
 .idea/
 .env
 *.session
+
+__pycache__/
+**/__pycache__/
+
+*.pyc
+**/*.pyc

@@ -1,15 +1,16 @@
+# 此文件中定义着数据结构
+
 from database.database import Base
 from sqlalchemy import Column as Col
-from sqlalchemy import Integer, UnicodeText, DateTime, Boolean, Text
+from sqlalchemy import UnicodeText, DateTime, Boolean, Text
+from sqlalchemy import BigInteger as Integer
 from sqlalchemy.dialects.postgresql import (
-    ARRAY as Array,
     JSON as Json
 )
 from enum import Enum as PythonEnum
 from sqlalchemy import Enum as ColEnum
 
 from pydantic import BaseModel
-from typing import Optional
 
 from pyrogram.enums import ChatType, UserStatus
 
@@ -22,10 +23,11 @@ class Chat(Base):
 
     title = Col(UnicodeText)
     username = Col(UnicodeText, nullable=True)
+    photo_file_id = Col(Text, nullable=True)
 
     last_updated = Col(DateTime)
-    # 若不特别说明，id 均指数据库中的 id
-    last_message_id = Col(Integer)
+    # 若不特别说明，id 均指 tg id
+    last_message_db_id = Col(Integer, nullable=True)
 
     pinned = Col(Boolean, default=False)
 
@@ -52,17 +54,27 @@ class User(Base):
 class MessageType(PythonEnum):
     text = 0
     photo = 1
-    photo_with_caption = 2
     sticker = 3
-    mixed = 4
     system = 5
     unsupported = 9
 
 
+class UnsupportedMessageType(PythonEnum):
+    animation = 0
+    game = 1
+    video = 2
+    voice = 3
+    audio = 4
+    poll = 5
+    other = 9
+
+
 class SystemMessageType(PythonEnum):
     new_member = 0
-    change_photo = 1
-    unsupported_or_other = 9
+    new_chat_photo = 1
+    new_chat_title = 2
+    left_member = 3
+    other = 9
 
 
 class Sticker(BaseModel):
@@ -73,10 +85,13 @@ class Sticker(BaseModel):
 class Message(Base):
     __tablename__ = "messages"
     id = Col(Integer, primary_key=True)
+    tg_id = Col(Integer)
 
     type = Col(ColEnum(MessageType))
+    unsupported_type = Col(ColEnum(UnsupportedMessageType))
 
-    sender_id = Col(Integer, nullable=True)
+    sender_id = Col(Integer, nullable=True)  # tg id，也是数据库 id
+    sender_chat_id = Col(Integer, nullable=True)
     chat_id = Col(Integer, nullable=True)
     send_at = Col(DateTime, nullable=True)
 
@@ -90,11 +105,12 @@ class Message(Base):
     photo_spoiler = Col(Boolean, default=False)
 
     system_message_type = Col(ColEnum(SystemMessageType))
-    system_message = Col(UnicodeText, nullable=True)
+    system_message = Col(UnicodeText, nullable=True)  # 可能是新加入的用户们，也可能是被飞掉的用户
 
     outgoing = Col(Boolean, default=False)
-    reply_to = Col(Integer, nullable=True)
+    reply_to_tg_id = Col(Integer, nullable=True)
 
     # 转发消息的来源直接摆烂做成不可点击
     forward_from_user_name = Col(UnicodeText, nullable=True)
-    forward_from_chat_id = Col(Integer, nullable=True)
+    forward_from_chat_name = Col(UnicodeText, nullable=True)
+    via_bot_username = Col(Text, nullable=True)

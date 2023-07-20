@@ -7,14 +7,16 @@ import uvicorn
 
 # Telegram
 from pyrogram import Client
+from pyrogram.handlers import MessageHandler
 
 # 程序内模块
 import context
 from settings import settings, app_version
+from database.database import Database
+from handlers import client_message_handler
 
-# 其它
+# 外部模块
 import os
-import sys
 from loguru import logger
 import logging
 import richuru
@@ -36,7 +38,18 @@ async def startup_event():
         api_hash=settings.telegram_api_hash,
         app_version='ZhubiApp ' + app_version,
     )
+    context.client.add_handler(
+        MessageHandler(client_message_handler)
+    )
     api.state.client = context.client
+
+    # 连接数据库
+    logger.info(
+        '正在连接数据库 ...'
+    )
+    context.db = Database()
+    await context.db.create_columns()
+    api.state.db = context.db
 
     # 登录流程
     if not os.path.exists('zhubiapp.session'):
@@ -46,6 +59,7 @@ async def startup_event():
         )
 
     await context.client.start()
+
 
 
 def main():

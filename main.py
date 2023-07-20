@@ -27,9 +27,10 @@ import richuru
 api = FastAPI()
 
 for router_module in [
-        misc
+    misc
 ]:
     api.include_router(router_module.router)
+
 
 # noinspection PyUnresolvedReferences
 @api.on_event('startup')

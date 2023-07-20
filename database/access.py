@@ -1,4 +1,4 @@
-# SQLAlchemy
+# 外部模块
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
@@ -9,6 +9,7 @@ from pyrogram.types import (
 from pyrogram.enums import (
     MessageMediaType
 )
+from loguru import logger
 
 # 程序内模块
 from database.models import (
@@ -40,6 +41,9 @@ class DatabaseAccess:
     async def save_new_chat(self, message: PyrogramMessage) -> Chat:
         # 在第一次接收到来自某个聊天的消息时
         # 在数据库中创建聊天对象
+        logger.info(
+            f'[bold]创建新的聊天对象[/bold]: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}'
+        )
         chat = Chat(
             id=message.chat.id,
             type=message.chat.type,
@@ -103,6 +107,9 @@ class DatabaseAccess:
             self.session.add(chat)
             message_type = MessageType.system
             system_message_type = SystemMessageType.new_chat_title
+            logger.info(
+                f'[bold magenta]{chat.title} 设置了新群名[/bold magenta]'
+            )
         elif message.new_chat_photo is not None:
             # 设置了新群头像
             chat = await self.get_chat_by_id(message.chat.id)
@@ -110,6 +117,9 @@ class DatabaseAccess:
             self.session.add(chat)
             message_type = MessageType.system
             system_message_type = SystemMessageType.new_chat_photo
+            logger.info(
+                f'[bold magenta]{message.chat.title} 设置了新群头像[/bold magenta]'
+            )
         elif message.new_chat_members is not None:
             # 新成员加入
             system_message = ', '.join(
@@ -120,16 +130,27 @@ class DatabaseAccess:
             )
             message_type = MessageType.system
             system_message_type = SystemMessageType.new_member
+            logger.info(
+                f'[bold magenta]新成员加入 {message.chat.title}[/bold magenta]: '
+                f'{system_message}'
+            )
         elif message.left_chat_member is not None:
             # 成员退出
             system_message = get_member_name(message.left_chat_member)
             message_type = MessageType.system
             system_message_type = SystemMessageType.left_member
+            logger.info(
+                f'[bold magenta]成员退出 {message.chat.title}[/bold magenta]: '
+                f'{get_member_name(message.left_chat_member)} ({message.left_chat_member.username})'
+            )
         else:
             if message.text is not None:
                 if message.text != '':
                     message_type = MessageType.text
-
+        logger.info(
+            f'[bold]收到新消息[/bold]: {message.id} ({message_type.name}) {message.text} - '
+            f'来自聊天 {message.chat.title} 中的 {get_member_name(message.from_user)}'
+        )
         message = Message(
             tg_id=message.id,
             type=message_type,

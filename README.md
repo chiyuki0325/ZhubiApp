@@ -13,9 +13,8 @@
 - 一次只允许一个设备登录
 
 ### 前端
-- 框架选用：React + Vite + Redux
-- UI 库：Fluent UI
-- 使用 [RecyclerListView](https://github.com/Flipkart/recyclerlistview) 优化消息列表性能
+- 框架选用：Vue + Pinia + Vite
+- UI 库：Vuetify
 
 
 ## 大饼进度

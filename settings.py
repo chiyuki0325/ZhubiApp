@@ -1,5 +1,8 @@
 from pydantic_settings import BaseSettings
-from typing import Optional as Opt
+from typing import (
+    Optional as Opt,
+    Literal
+)
 
 
 class Settings(BaseSettings):
@@ -9,8 +12,13 @@ class Settings(BaseSettings):
     api_host: Opt[str] = 'localhost'
     api_port: Opt[int] = 8080
 
-    auth: Opt[str] = 'none'
-    # none, password, webauthn (todo)
+    auth_method: Opt[Literal['password', 'webauthn']] = 'password'
+    # password, webauthn (todo)
+
+    password: Opt[str] = 'nm$l'
+
+    # 在关闭浏览器后，token 多久会失效
+    token_expire_minutes: Opt[int] = 1
 
     postgresql_host: Opt[str] = 'localhost'
     postgresql_port: Opt[int] = 5432
@@ -19,6 +27,10 @@ class Settings(BaseSettings):
     postgresql_database: Opt[str] = 'zhubiapp'
 
     loglevel: Opt[str] = 'INFO'
+
+    frontend_files: Opt[str] = 'web/dist'
+
+    cors_allowed_origins: Opt[str] = '*'
 
     class Config:
         env_file = '.env'

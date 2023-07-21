@@ -1,6 +1,10 @@
 from pyrogram.types import (
     User as PyrogramUser
 )
+import hmac
+from hashlib import sha256
+from functools import lru_cache
+import random
 
 
 def get_attr(some_object, attr):
@@ -18,3 +22,16 @@ def get_member_name(member: PyrogramUser | None) -> str | None:
     if member is None:
         return None
     return f"{str_nullable(member.first_name)} {str_nullable(member.last_name)}"
+
+
+@lru_cache
+def calculate_password_hash(password: str) -> str:
+    return hmac.new(
+        key='6634409710'.encode('utf-8'),
+        msg=password.encode('utf-8'),
+        digestmod=sha256
+    ).hexdigest()
+
+
+def generate_token() -> str:
+    return random.randint(0, 2 ** 256).to_bytes(32, 'big').hex()

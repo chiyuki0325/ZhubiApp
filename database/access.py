@@ -42,7 +42,8 @@ class DatabaseAccess:
         # 在第一次接收到来自某个聊天的消息时
         # 在数据库中创建聊天对象
         logger.info(
-            f'[bold]创建新的聊天对象[/bold]: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}'
+            f'创建新的聊天对象: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}',
+            alt=f'[bold]创建新的聊天对象[/]: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}'
         )
         chat = Chat(
             id=message.chat.id,
@@ -108,7 +109,8 @@ class DatabaseAccess:
             message_type = MessageType.system
             system_message_type = SystemMessageType.new_chat_title
             logger.info(
-                f'[bold magenta]{chat.title} 设置了新群名[/bold magenta]'
+                f'{chat.title} 设置了新群名',
+                alt=f'[bold magenta]{chat.title} 设置了新群名[/]'
             )
         elif message.new_chat_photo is not None:
             # 设置了新群头像
@@ -118,7 +120,8 @@ class DatabaseAccess:
             message_type = MessageType.system
             system_message_type = SystemMessageType.new_chat_photo
             logger.info(
-                f'[bold magenta]{message.chat.title} 设置了新群头像[/bold magenta]'
+                f'{message.chat.title} 设置了新群头像',
+                alt=f'[bold magenta]{message.chat.title} 设置了新群头像[/]'
             )
         elif message.new_chat_members is not None:
             # 新成员加入
@@ -131,8 +134,10 @@ class DatabaseAccess:
             message_type = MessageType.system
             system_message_type = SystemMessageType.new_member
             logger.info(
-                f'[bold magenta]新成员加入 {message.chat.title}[/bold magenta]: '
-                f'{system_message}'
+                f'新成员加入 {message.chat.title}: '
+                f'{system_message}',
+                alt=f'[bold magenta]新成员加入 {message.chat.title}[/]: '
+                    f'{system_message}'
             )
         elif message.left_chat_member is not None:
             # 成员退出
@@ -140,16 +145,20 @@ class DatabaseAccess:
             message_type = MessageType.system
             system_message_type = SystemMessageType.left_member
             logger.info(
-                f'[bold magenta]成员退出 {message.chat.title}[/bold magenta]: '
-                f'{get_member_name(message.left_chat_member)} ({message.left_chat_member.username})'
+                f'成员退出 {message.chat.title}: '
+                f'{get_member_name(message.left_chat_member)} ({message.left_chat_member.username})',
+                alt=f'[bold magenta]成员退出 {message.chat.title}[/]: '
+                    f'{get_member_name(message.left_chat_member)} ({message.left_chat_member.username})'
             )
         else:
             if message.text is not None:
                 if message.text != '':
                     message_type = MessageType.text
         logger.info(
-            f'[bold]收到新消息[/bold]: {message.id} ({message_type.name}) {message.text} - '
-            f'来自聊天 {message.chat.title} 中的 {get_member_name(message.from_user)}'
+            f'收到新消息: {message.id} ({message_type.name}) {message.text} - '
+            f'来自聊天 {message.chat.title} 中的 {get_member_name(message.from_user)}',
+            alt=f'[bold]收到新消息[/]: {message.id} ({message_type.name}) - '
+                f'来自聊天 {message.chat.title} 中的 {get_member_name(message.from_user)}'
         )
         message = Message(
             tg_id=message.id,

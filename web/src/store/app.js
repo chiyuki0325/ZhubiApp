@@ -1,8 +1,10 @@
 // Utilities
 import {defineStore} from 'pinia'
 
-export const useApiUrlStore = defineStore('apiPath', {
+
+export const useSettingStore = defineStore('settings', {
   state: () => ({
-    apiUrl: 'http://localhost:5586'
-  }),
+    rail: true,
+    tab: 'allChats'
+  })
 })

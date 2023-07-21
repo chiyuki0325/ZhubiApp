@@ -1,17 +1,16 @@
 <script setup>
 import {ref} from 'vue'
 import axios from 'axios'
-import {useApiUrlStore} from "@/store/app"
 import Cookies from 'js-cookie'
 import {calculatePasswordHash} from "@/utils"
+import {apiUrl} from "@/config/config"
 
-const apiUrl = useApiUrlStore()
 let password = ref(''), loading = false
 
 function handleLogin() {
   const passwordHash = calculatePasswordHash(password.value)
   loading = true
-  axios.post(`${apiUrl.apiUrl}/user/login/password`, {
+  axios.post(`${apiUrl}/user/login/password`, {
     password_hash: passwordHash
   }).then(response => {
     loading = false

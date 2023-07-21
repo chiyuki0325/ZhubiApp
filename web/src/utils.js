@@ -1,5 +1,6 @@
 import {HmacSHA256, enc as cryptoEnc} from 'crypto-js'
+import {key} from '@/config/config'
 
 export function calculatePasswordHash(password) {
-  return HmacSHA256(password, '6634409710').toString(cryptoEnc.Hex)
+  return HmacSHA256(password, key).toString(cryptoEnc.Hex)
 }

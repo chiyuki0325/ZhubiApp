@@ -1,4 +1,10 @@
 // Utilities
-import { createPinia } from 'pinia'
+import {createPinia} from 'pinia'
 
-export default createPinia()
+export const store = createPinia()
+
+export default {
+  install: (app) => {
+    app.use(store)
+  }
+}

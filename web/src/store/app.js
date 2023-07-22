@@ -19,22 +19,3 @@ export const useMessageStore = defineStore('message', {
     messages: [],
   })
 })
-
-export const useWebSocketStore = defineStore('websocket', {
-  state: () => ({
-    sequence: 0,
-    heartBeatLostCount: 0,
-  }),
-  getters: {
-    getSequence: (state) => state.sequence,
-    getHeartBeatLostCount: (state) => state.heartBeatLostCount,
-  },
-  actions: {
-    increaseSequence() {
-      this.sequence++
-    },
-    increaseHeartBeatLostCount() {
-      this.heartBeatLostCount++
-    }
-  }
-})

@@ -21,4 +21,4 @@ class Payload(BaseModel):
     """
     operation_code: Operations = Field(default=Operations.invalid_payload, alias="op")
     data: Any = Field(default={}.copy(), alias="d")
-    sequence: int = Field(default=0, alias="s")
+    token: str = Field(default="", alias="t")

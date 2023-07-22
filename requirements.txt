@@ -2,6 +2,7 @@
 fastapi
 uvicorn
 uvloop
+websockets
 
 # Telegram userbot
 pyrogram
@@ -22,3 +23,6 @@ python-magic
 # 日志
 loguru
 richuru
+
+# JSON
+python-rapidjson

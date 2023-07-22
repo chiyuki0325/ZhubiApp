@@ -17,13 +17,13 @@ from models.websocket import Payload, Operations
 import context
 from settings import settings
 
-router = APIRouter(prefix="/ws", tags=["websocket"])
+router = APIRouter(prefix="", tags=["websocket"])
 
 event_handlers: Dict[int, Callable] = {}
 
 
-@router.websocket_route("/", name="ws")
-# http://localhost:5586/ws/
+@router.websocket_route("/ws", name="ws")
+# http://localhost:5586/ws
 class ZhubiWebSocket(WebSocketEndpoint):
     encoding = 'text'
 
@@ -37,7 +37,7 @@ class ZhubiWebSocket(WebSocketEndpoint):
             )
         except Exception:
             await websocket.send_text(Payload(
-                op_code=Operations.invalid_payload
+                op=Operations.invalid_payload
             ).model_dump_json(by_alias=True))
             await websocket.close()
             raise
@@ -72,9 +72,10 @@ def needs_token(func):
             msg = "登录已过期"
         else:
             return await func(websocket, data, token)
+        logger.warning(f"拒绝 {websocket.client.host} 的请求: {msg}")
         await websocket.send_text(Payload(
-            operation_code=Operations.invalid_payload,
-            data={"msg": msg}
+            op=Operations.invalid_payload,
+            d={"msg": msg, "code": 401},
         ).model_dump_json(by_alias=True))
         await websocket.close()
         return
@@ -82,11 +83,12 @@ def needs_token(func):
     return wrapper
 
 
-@event(Operations.heartbeat)
 @event(Operations.ping)
+@event(Operations.heartbeat)
+@needs_token
 async def op_ping(websocket: WebSocket, data: Any, token: str):
     await websocket.send_text(Payload(
-        operation_code=Operations.pong,
+        op=Operations.pong,
     ).model_dump_json(by_alias=True))
 
 

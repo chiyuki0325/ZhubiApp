@@ -20,6 +20,7 @@ import context
 from settings import settings, app_version, Settings
 from database.database import Database
 from handlers import *
+from routers.websocket import ZhubiWebSocket
 
 # 外部模块
 import os
@@ -31,7 +32,7 @@ import importlib
 api = FastAPI()
 
 for router_module in [
-    'misc', 'websocket', 'user'
+    'misc', 'user', 'websocket'
 ]:
     api.include_router(
         importlib.import_module('routers.' + router_module).router

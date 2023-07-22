@@ -10,13 +10,16 @@ import uvicorn
 
 # Telegram
 from pyrogram import Client
-from pyrogram.handlers import MessageHandler
+from pyrogram.handlers import (
+    MessageHandler,
+    DeletedMessagesHandler
+)
 
 # 程序内模块
 import context
 from settings import settings, app_version, Settings
 from database.database import Database
-from handlers import client_message_handler
+from handlers import *
 
 # 外部模块
 import os
@@ -92,8 +95,12 @@ async def startup_event():
         api_hash=settings.telegram_api_hash,
         app_version='ZhubiApp ' + app_version,
     )
+    # 添加消息处理器
     context.client.add_handler(
         MessageHandler(client_message_handler)
+    )
+    context.client.add_handler(
+        DeletedMessagesHandler(client_message_deletion_handler)
     )
     api.state.client = context.client
 

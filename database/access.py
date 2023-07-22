@@ -1,3 +1,5 @@
+# 数据访问组件
+
 # 外部模块
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -10,6 +12,7 @@ from pyrogram.enums import (
     MessageMediaType
 )
 from loguru import logger
+from typing import Optional as Opt
 
 # 程序内模块
 from database.models import (
@@ -45,10 +48,20 @@ class DatabaseAccess:
             f'创建新的聊天对象: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}',
             alt=f'[bold]创建新的聊天对象[/]: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}'
         )
+        if message.chat.title is not None:
+            # 群聊
+            title = message.chat.title
+        else:
+            # 私聊
+            # noinspection PyBroadException
+            try:
+                title = get_member_name(message.from_user)
+            except Exception:
+                title = message.from_user.username
         chat = Chat(
             id=message.chat.id,
             type=message.chat.type,
-            title=message.chat.title,
+            title=title,
             username=message.chat.username,
             last_updated=datetime.now(),
             last_message_db_id=None,
@@ -59,14 +72,15 @@ class DatabaseAccess:
         await self.flush()
         return chat
 
-    async def touch_chat(self, chat: Chat, message: PyrogramMessage):
+    async def touch_chat(self, chat: Chat, message: Opt[PyrogramMessage | None] = None):
         # 更新 chat 的修改日期和最新消息
         chat.last_updated = datetime.now()
-        chat.last_message_db_id = message.id
+        if message is not None:
+            chat.last_message_db_id = message.id
         self.session.add(chat)
         await self.flush()
 
-    async def save_new_message(self, message: PyrogramMessage) -> Message:
+    async def save_new_message(self, message: PyrogramMessage) -> Message | None:
         # 接收到新消息时，存储到数据库
         message_type = MessageType.unsupported
         system_message_type = SystemMessageType.other
@@ -95,12 +109,34 @@ class DatabaseAccess:
                         unsupported_type = UnsupportedMessageType.animation
                     case MessageMediaType.GAME:
                         unsupported_type = UnsupportedMessageType.game
+                        system_message = '[游戏]' + message.game.title + '\n' + message.game.description
                     case MessageMediaType.POLL:
                         unsupported_type = UnsupportedMessageType.poll
+                        system_message = '[投票]' + message.poll.question
+                        for option in message.poll.options:
+                            system_message += '\n- ' + option.text
                     case MessageMediaType.VOICE:
                         unsupported_type = UnsupportedMessageType.voice
+                        if message.voice.duration:
+                            system_message = f'[语音] ({message.voice.duration} 秒)'
                     case MessageMediaType.AUDIO:
                         unsupported_type = UnsupportedMessageType.audio
+                        if message.audio.title:
+                            system_message = message.audio.title
+                        elif message.audio.file_name:
+                            system_message = message.audio.file_name
+                        else:
+                            system_message = '[音频文件]'
+                    case MessageMediaType.WEB_PAGE:
+                        # 不存
+                        return
+                    case MessageMediaType.DOCUMENT:
+                        unsupported_type = UnsupportedMessageType.file
+                        # 文件
+                        if message.document.file_name:
+                            system_message = message.document.file_name
+                        else:
+                            system_message = '[' + message.document.mime_type + ' 文件]'
         elif message.new_chat_title is not None:
             # 设置了新群名
             chat = await self.get_chat_by_id(message.chat.id)
@@ -181,7 +217,8 @@ class DatabaseAccess:
             reply_to_tg_id=message.reply_to_message_id,
             forward_from_user_name=get_member_name(message.forward_from),
             via_bot_username=get_attr(message.via_bot, 'username'),
-            forward_from_chat_name=get_attr(message.forward_from_chat, 'title')
+            forward_from_chat_name=get_attr(message.forward_from_chat, 'title'),
+            deleted=False
         )
         self.session.add(message)
         await self.flush()
@@ -223,3 +260,21 @@ class DatabaseAccess:
             user.username = message.from_user.username
         self.session.add(user)
         await self.flush()
+
+    async def get_message_by_obj(self, message: PyrogramMessage) -> Message | None:
+        # 获取消息对象
+        message: Message | None = (await self.session.execute(
+            select(Message).where(Message.tg_id == message.id and Message.chat_id == message.chat.id)
+        )).scalars().first()
+        return message
+
+    async def delete_message(self, message: PyrogramMessage):
+        # 删除消息
+        message: Message | None = await self.get_message_by_obj(message)
+        if message is not None:
+            message.deleted = True
+            logger.info(
+                f'删除消息 {message.id} ({message.type.name})'
+            )
+            self.session.add(message)
+            await self.flush()

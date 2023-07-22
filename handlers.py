@@ -5,6 +5,7 @@ from pyrogram import Client
 from pyrogram.types import Message as PyrogramMessage
 from datetime import datetime
 from loguru import logger
+from typing import List
 
 # 程序内模块
 import context
@@ -16,6 +17,11 @@ from database.models import (
     Message,
     User
 )
+
+__all__ = [
+    'client_message_handler',
+    'client_message_deletion_handler'
+]
 
 
 async def client_message_handler(
@@ -44,3 +50,17 @@ async def client_message_handler(
                 else:
                     await da.touch_user(user, message)
 
+
+async def client_message_deletion_handler(
+        client: Client,
+        messages: List[PyrogramMessage]
+):
+    async with context.db.async_session() as session:
+        async with session.begin():
+            da = DatabaseAccess(session)
+
+            for message in messages:
+                chat_id: int = message.chat.id
+                chat: Chat | None = await da.get_chat_by_id(chat_id)
+                if chat is not None:
+                    await da.delete_message(message)

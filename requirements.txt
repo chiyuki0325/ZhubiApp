@@ -3,6 +3,7 @@ fastapi
 uvicorn
 uvloop
 websockets
+starlette
 
 # Telegram userbot
 pyrogram
@@ -26,3 +27,6 @@ richuru
 
 # JSON
 python-rapidjson
+
+# 频道
+broadcaster

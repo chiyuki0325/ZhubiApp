@@ -4,9 +4,14 @@ from typing import Any, Dict, Callable
 from functools import wraps
 from datetime import datetime
 
-from fastapi import WebSocket, APIRouter
+from fastapi import APIRouter
 from loguru import logger
 import rapidjson as json
+
+# 要开始从 starlette 层面下手了
+from starlette.websockets import WebSocket
+from starlette.endpoints import WebSocketEndpoint
+import broadcaster
 
 from models.websocket import Payload, Operations
 import context
@@ -17,15 +22,15 @@ router = APIRouter(prefix="/ws", tags=["websocket"])
 event_handlers: Dict[int, Callable] = {}
 
 
-@router.websocket("")
-# http://localhost:5586/ws
-# 没有 /
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
+@router.websocket_route("/", name="ws")
+# http://localhost:5586/ws/
+class ZhubiWebSocket(WebSocketEndpoint):
+    encoding = 'text'
 
-    while True:
-        data = await websocket.receive_text()
-        # noinspection PyBroadException
+    async def on_connect(self, websocket: WebSocket):
+        await websocket.accept()
+
+    async def on_receive(self, websocket: WebSocket, data: str):
         try:
             payload = Payload.model_validate(
                 json.loads(data)
@@ -43,6 +48,9 @@ async def websocket_endpoint(websocket: WebSocket):
             data=payload.data,
             token=payload.token
         )
+
+    async def on_disconnect(self, websocket, close_code):
+        pass
 
 
 def event(event_name):

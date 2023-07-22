@@ -5,7 +5,7 @@ import {apiUrl} from "@/config/config"
 
 export default {
   install: (app) => {
-    const webSocketUrl = apiUrl.replace('http', 'ws') + '/ws'
+    const webSocketUrl = apiUrl.replace('http', 'ws') + '/ws/'
     const webSocketStore = useWebSocketStore(store)
     app.use(vueNativeWebSocket, webSocketUrl, {
       store: webSocketStore,

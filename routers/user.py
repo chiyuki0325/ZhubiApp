@@ -52,6 +52,22 @@ async def user_login_password(
         )
 
 
+@router.post('/validate')
+async def user_validate(
+        request: UserValidateRequest
+) -> UserValidateResponse:
+    if request.token == context.token:
+        if (datetime.now() - context.token_last_used).total_seconds() / 60 < settings.token_expire_minutes:
+            return UserValidateResponse(
+                code=200,
+                valid=True
+            )
+    return UserValidateResponse(
+        code=403,
+        valid=False
+    )
+
+
 router.include_router(
     login_router
 )

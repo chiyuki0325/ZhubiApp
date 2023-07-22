@@ -1,13 +1,10 @@
 <script async setup>
-import axios from 'axios'
-import {apiUrl} from '@/config/config'
-
-// 项目内部组件
+import {api} from "@/utils"
 import LoginPassword from "./LoginPassword.vue"
 
 
 // 获取登录方式
-const loginMethod = await axios.get(`${apiUrl}/user/login/method`).then(response => {
+const loginMethod = await api.get('/user/login/method').then(response => {
   return response.data.method
 })
 

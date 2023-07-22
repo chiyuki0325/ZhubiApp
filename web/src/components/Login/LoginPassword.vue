@@ -1,27 +1,26 @@
 <script setup>
 import {ref} from 'vue'
-import axios from 'axios'
 import Cookies from 'js-cookie'
 import {calculatePasswordHash} from "@/utils"
-import {apiUrl} from "@/config/config"
+import {api} from "@/utils"
 
 let password = ref(''), loading = false
 
 function handleLogin() {
   const passwordHash = calculatePasswordHash(password.value)
   loading = true
-  axios.post(`${apiUrl}/user/login/password`, {
+  api.post('/user/login/password', {
     password_hash: passwordHash
   }).then(response => {
     loading = false
-      if (response.data.code === 200) {
-        Cookies.set('token', response.data.token)
-        window.location.href = '/chat'
-      } else {
-        alert('密码错误！')
-      }
-    })
-  }
+    if (response.data.code === 200) {
+      Cookies.set('token', response.data.token)
+      window.location.href = '/chat'
+    } else {
+      alert('密码错误！')
+    }
+  })
+}
 </script>
 
 <template>

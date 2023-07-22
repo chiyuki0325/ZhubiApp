@@ -11,6 +11,7 @@ class Operations(IntEnum):
     heartbeat = 0  # 每 30 秒一次
     ping = 1  # 刚连接上时发送一次
     pong = 2  # 服务器返回
+    new_message = 3  # 接收到新消息
 
     invalid_payload = 1000
 

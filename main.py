@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvloop
 import uvicorn
+from broadcaster import Broadcast
 
 # Telegram
 from pyrogram import Client
@@ -20,7 +21,6 @@ import context
 from settings import settings, app_version, Settings
 from database.database import Database
 from handlers import *
-from routers.websocket import ZhubiWebSocket
 
 # 外部模块
 import os
@@ -112,6 +112,14 @@ async def startup_event():
     context.db = Database()
     await context.db.create_columns()
     api.state.db = context.db
+
+    # 连接广播器
+    broadcast_url: str = 'postgresql://'
+    broadcast_url += settings.postgresql_user
+    if settings.postgresql_password:
+        broadcast_url += f':{settings.postgresql_password}'
+    broadcast_url += f'@{settings.postgresql_host}:{settings.postgresql_port}/{settings.postgresql_database}'
+    context.broadcast = Broadcast(broadcast_url)
 
     # 登录流程
     if not os.path.exists('zhubiapp.session'):

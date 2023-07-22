@@ -58,6 +58,9 @@ export const useWebSocketStore = defineStore('websocket', {
             }
           }
           break
+        case operations.new_message:
+          //TODO
+          console.log(data)
       }
     },
     // 自动重连

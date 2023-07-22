@@ -6,7 +6,7 @@ import magic
 
 # 项目内部模块
 from depends import (
-    get_client
+    extract_client
 )
 
 router = APIRouter(
@@ -17,7 +17,7 @@ router = APIRouter(
 @router.get('/media/{file_id}')
 async def get_media(
         file_id: str,
-        client=Depends(get_client)
+        client=Depends(extract_client)
 ):
     with client:
         file = await client.download_media(

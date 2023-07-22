@@ -11,7 +11,6 @@ import rapidjson as json
 # 要开始从 starlette 层面下手了
 from starlette.websockets import WebSocket
 from starlette.endpoints import WebSocketEndpoint
-import broadcaster
 
 from models.websocket import Payload, Operations
 import context
@@ -29,6 +28,13 @@ class ZhubiWebSocket(WebSocketEndpoint):
 
     async def on_connect(self, websocket: WebSocket):
         await websocket.accept()
+        await self.subscribe_sender(websocket)
+
+    @staticmethod
+    async def subscribe_sender(websocket: WebSocket):
+        async with context.broadcast.subscribe(channel="chat") as subscriber:
+            async for broadcast_event in subscriber:
+                await websocket.send_text(broadcast_event.message)
 
     async def on_receive(self, websocket: WebSocket, data: str):
         try:

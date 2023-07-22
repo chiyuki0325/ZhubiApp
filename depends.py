@@ -12,5 +12,5 @@ async def create_da(request: Request):
             yield DatabaseAccess(session)
 
 
-async def get_client(request: Request) -> Client:
+async def extract_client(request: Request) -> Client:
     return request.app.state.client

@@ -17,8 +17,11 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 class Database:
     def __init__(self):
-        url: str = f'postgresql+asyncpg://{settings.postgresql_user}:{settings.postgresql_password}@' \
-                   f'{settings.postgresql_host}:{settings.postgresql_port}/{settings.postgresql_database}'
+        url: str = 'postgresql+asyncpg://'
+        url += settings.postgresql_user
+        if settings.postgresql_password:
+            url += f':{settings.postgresql_password}'
+        url += f'@{settings.postgresql_host}:{settings.postgresql_port}/{settings.postgresql_database}'
         self.engine: AsyncEngine = create_async_engine(
             url,
             echo=settings.loglevel == 'DEBUG'

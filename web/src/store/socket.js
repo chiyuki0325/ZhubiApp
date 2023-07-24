@@ -65,7 +65,11 @@ export const useWebSocketStore = defineStore('websocket', {
     },
     // 自动重连
     SOCKET_RECONNECT(count) {
-      console.info('消息系统重连中...', count)
+      if (count <= 3) {
+        console.info('服务器可能似了，正在重连...', count)
+      } else {
+        document.innerHTML = '<img src="/assets/server-exploded.png" alt="喜报：服务器炸了" />'
+      }
     },
     // 重连错误
     SOCKET_RECONNECT_ERROR() {

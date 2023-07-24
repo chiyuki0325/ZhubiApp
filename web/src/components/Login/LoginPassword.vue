@@ -28,6 +28,7 @@ function handleLogin() {
     使用设置的密码以登录。
   </v-card-subtitle>
   <div class="mx-6 py-6">
+    <v-img src="/assets/password.svg" contain class="mx-auto ma-8"></v-img>
     <v-text-field
       v-model="password"
       variant="outlined"

@@ -27,6 +27,3 @@ richuru
 
 # JSON
 python-rapidjson
-
-# 频道
-broadcaster

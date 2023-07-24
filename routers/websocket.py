@@ -32,9 +32,11 @@ class ZhubiWebSocket(WebSocketEndpoint):
 
     @staticmethod
     async def subscribe_sender(websocket: WebSocket):
-        async with context.broadcast.subscribe(channel="chat") as subscriber:
-            async for broadcast_event in subscriber:
-                await websocket.send_text(broadcast_event.message)
+        while True:
+            payload = await context.queue.get()
+            await websocket.send_text(
+                payload.model_dump_json(by_alias=True)
+            )
 
     async def on_receive(self, websocket: WebSocket, data: str):
         try:

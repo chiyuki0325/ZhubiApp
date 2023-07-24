@@ -113,14 +113,6 @@ async def startup_event():
     await context.db.create_columns()
     api.state.db = context.db
 
-    # 连接广播器
-    broadcast_url: str = 'postgresql://'
-    broadcast_url += settings.postgresql_user
-    if settings.postgresql_password:
-        broadcast_url += f':{settings.postgresql_password}'
-    broadcast_url += f'@{settings.postgresql_host}:{settings.postgresql_port}/{settings.postgresql_database}'
-    context.broadcast = Broadcast(broadcast_url)
-
     # 登录流程
     if not os.path.exists('zhubiapp.session'):
         logger.info(

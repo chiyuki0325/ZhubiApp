@@ -14,11 +14,41 @@ from enum import Enum as PythonEnum
 from pydantic import BaseModel
 from typing import Optional as Opt
 from pyrogram.enums import ChatType, UserStatus
+import rapidjson as json
+from datetime import datetime
 
 
-class Chat(Base):
-    __tablename__ = "chats"
+class SerializableBase(Base):
+    __abstract__ = True
     __mapper_args__ = {"eager_defaults": True}
+
+    def to_dict(self):
+        output_dict = {}
+        for key in self.__mapper__.c.keys():
+            output_dict[key] = getattr(self, key)
+            if hasattr(output_dict[key], 'value'):
+                output_dict[key] = output_dict[key].value
+            if isinstance(output_dict[key], datetime):
+                output_dict[key] = output_dict[key].isoformat()
+        return output_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        data = data.copy()
+        for key in data:
+            if isinstance(data[key], str):
+                try:
+                    data[key] = datetime.fromisoformat(data[key])
+                except ValueError:
+                    pass
+        return cls(**data)
+
+
+class Chat(SerializableBase):
+    __tablename__ = "chats"
 
     id = Col(Integer, primary_key=True)  # tg id
 
@@ -34,9 +64,8 @@ class Chat(Base):
     pinned = Col(Boolean, default=False)  # 是否置顶
 
 
-class User(Base):
+class User(SerializableBase):
     __tablename__ = "users"
-    __mapper_args__ = {"eager_defaults": True}
 
     id = Col(Integer, primary_key=True)  # tg id
 
@@ -88,9 +117,8 @@ class Sticker(BaseModel):
     emoji: Opt[str]  # 🥰
 
 
-class Message(Base):
+class Message(SerializableBase):
     __tablename__ = "messages"
-    __mapper_args__ = {"eager_defaults": True}
 
     id = Col(Integer, primary_key=True)  # 数据库 id
     tg_id = Col(Integer)  # tg id

@@ -11,6 +11,7 @@ from typing import List
 import context
 from settings import settings
 from database.access import DatabaseAccess
+from models.websocket import Payload, Operations
 
 from database.models import (
     Chat,
@@ -49,6 +50,14 @@ async def client_message_handler(
                     await da.save_new_user(message.from_user)
                 else:
                     await da.touch_user(user, message)
+
+            # 发送给前端
+            await context.queue.put(
+                Payload(
+                    op=Operations.new_message,
+                    d=message_obj.to_dict()
+                )
+            )
 
 
 async def client_message_deletion_handler(

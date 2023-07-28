@@ -1,6 +1,7 @@
 <script setup>
 import Message from "./Message.vue"
 import {computed} from "vue"
+import {useTheme} from "vuetify"
 
 const message = {
   "id": 5935,
@@ -30,22 +31,55 @@ const message = {
 
 const date = computed(() => (new Date(message.send_at)).toLocaleString())
 const cardColor = computed(() => (
-  message.deleted ? 'surface' : 'onPrimary'
+  message.deleted ? 'surface' : (message.outgoing ? 'primaryContainer' : 'onPrimary')
+))
+
+const theme = useTheme()
+const colors = theme.current.value.colors
+const textColor = computed(() => (
+  message.deleted ? colors.gray : (message.outgoing ? colors.onPrimaryContainer : colors.onBackground)
 ))
 </script>
 
 <template>
-  <Suspense>
-    <v-card max-width="400" :color="cardColor" class="pa-2">
-      <Message :message="message" v-if="!message.deleted"/>
-      <div class="message-deleted" v-else>[已删除]</div>
-      <div class="message-date text-right text-sm-caption">
-        {{ date }}
-      </div>
-    </v-card>
-  </Suspense>
+  <div
+    class="message-wrapper d-flex flex-row"
+    :class="{
+      'justify-end': message.outgoing,
+      'justify-start': !message.outgoing,
+    }"
+  >
+    <Suspense>
+      <v-card
+        min-width="150"
+        max-width="400"
+        :color="cardColor"
+        :style="{
+            color: textColor
+        }"
+        class="pa-2"
+      >
+
+        <Message
+          :message="message"
+          v-if="!message.deleted"
+        />
+        <div
+          class="message-deleted"
+          :class="{
+            'text-grey': message.deleted,
+        }"
+          v-else
+        >[已删除]
+        </div>
+
+        <div class="message-date text-right text-sm-caption">
+          {{ date }}
+        </div>
+      </v-card>
+    </Suspense>
+  </div>
 </template>
 
 <style scoped>
-
 </style>

@@ -6,11 +6,11 @@ from pyrogram import Client
 from database.access import DatabaseAccess
 
 
-async def create_da(request: Request):
+async def use_da(request: Request):
     async with request.app.state.db.async_session() as session:
         async with session.begin():
             yield DatabaseAccess(session)
 
 
-async def extract_client(request: Request) -> Client:
+async def use_client(request: Request) -> Client:
     return request.app.state.client

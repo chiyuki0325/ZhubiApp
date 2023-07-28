@@ -6,12 +6,6 @@ export function calculatePasswordHash(password) {
   return HmacSHA256(password, key).toString(cryptoEnc.Hex)
 }
 
-export const api = {
-  // 对 axios 的封装
-  get: (url, params) => {
-    return axios.get(apiUrl + url, {params})
-  },
-  post: (url, data) => {
-    return axios.post(apiUrl + url, data)
-  }
-}
+export const api = axios.create({
+  baseURL: apiUrl,
+})

@@ -5,7 +5,7 @@ from loguru import logger
 
 # 项目内部模块
 from depends import (
-    extract_client
+    use_client
 )
 from settings import settings
 from models.user import *

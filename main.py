@@ -32,7 +32,7 @@ import importlib
 api = FastAPI()
 
 for router_module in [
-    'misc', 'user', 'websocket'
+    'misc', 'user', 'websocket', 'tg'
 ]:
     api.include_router(
         importlib.import_module('routers.' + router_module).router

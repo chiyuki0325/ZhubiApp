@@ -1,5 +1,3 @@
-# 借鉴自 https://github.com/purofle/webtg/blob/main/backend/routers/websocket.py
-
 from typing import Any, Dict, Callable
 from functools import wraps
 from datetime import datetime
@@ -13,6 +11,7 @@ from starlette.websockets import WebSocket
 from starlette.endpoints import WebSocketEndpoint
 
 from models.websocket import Payload, Operations
+from database.access import DatabaseAccess
 import context
 from settings import settings
 
@@ -61,6 +60,8 @@ class ZhubiWebSocket(WebSocketEndpoint):
         pass
 
 
+# 借鉴自 https://github.com/purofle/webtg/blob/main/backend/routers/websocket.py
+
 def event(event_name):
     def decorator(func):
         event_handlers[event_name] = func
@@ -79,6 +80,7 @@ def needs_token(func):
         elif (datetime.now() - context.token_last_used).total_seconds() / 60 > settings.token_expire_minutes:
             msg = "登录已过期"
         else:
+            context.token_last_used = datetime.now()
             return await func(websocket, data, token)
         logger.warning(f"拒绝 {websocket.client.host} 的请求: {msg}")
         await websocket.send_text(Payload(

@@ -35,3 +35,4 @@ def calculate_password_hash(password: str) -> str:
 
 def generate_token() -> str:
     return random.randint(0, 2 ** 256).to_bytes(32, 'big').hex()
+

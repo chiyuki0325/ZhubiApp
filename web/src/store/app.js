@@ -8,14 +8,3 @@ export const useSettingStore = defineStore('settings', {
     tab: 'allChats'
   })
 })
-
-export const useChatStore = defineStore('chat', {
-  state: () => ({
-    chats: [],
-  })
-})
-export const useMessageStore = defineStore('message', {
-  state: () => ({
-    messages: [],
-  })
-})

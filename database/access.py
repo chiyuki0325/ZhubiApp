@@ -80,8 +80,7 @@ class DatabaseAccess:
         self.session.add(chat)
         await self.flush()
 
-    async def save_new_message(self, message: PyrogramMessage) -> Message | None:
-        # 接收到新消息时，存储到数据库
+    async def __serialize_message(self, message: PyrogramMessage) -> Message | None:
         message_type = MessageType.unsupported
         system_message_type = SystemMessageType.other
         unsupported_type = UnsupportedMessageType.other
@@ -196,7 +195,7 @@ class DatabaseAccess:
             alt=f'[bold]收到新消息[/]: {message.id} ({message_type.name}) - '
                 f'来自聊天 {message.chat.title} 中的 {get_member_name(message.from_user)}'
         )
-        message = Message(
+        return Message(
             tg_id=message.id,
             type=message_type,
             unsupported_type=unsupported_type,
@@ -220,9 +219,29 @@ class DatabaseAccess:
             forward_from_chat_name=get_attr(message.forward_from_chat, 'title'),
             deleted=False
         )
-        self.session.add(message)
+
+    async def save_new_message(self, message: PyrogramMessage) -> Message | None:
+        # 接收到新消息时，存储到数据库
+        serialized_message: Message | None = await self.__serialize_message(message)
+        if serialized_message is None:
+            return
+        self.session.add(serialized_message)
         await self.flush()
-        return message
+        return serialized_message
+
+    async def update_message(self, message: PyrogramMessage) -> Message | None:
+        # 更新消息
+        fetched_message: Message | None = await self.get_message_by_obj(message)
+        if fetched_message is None:
+            return
+        serialized_message: Message | None = await self.__serialize_message(message)
+        if serialized_message is None:
+            return
+        db_id = fetched_message.id
+        serialized_message.id = db_id
+        self.session.add(serialized_message)
+        await self.flush()
+        return serialized_message
 
     async def get_user_by_id(self, user_id: int) -> User | None:
         # 获取用户对象

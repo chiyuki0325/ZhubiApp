@@ -21,7 +21,8 @@ from database.models import (
 
 __all__ = [
     'client_message_handler',
-    'client_message_deletion_handler'
+    'client_message_deletion_handler',
+    'client_message_edit_handler'
 ]
 
 
@@ -73,3 +74,13 @@ async def client_message_deletion_handler(
                 chat: Chat | None = await da.get_chat_by_id(chat_id)
                 if chat is not None:
                     await da.delete_message(message)
+
+
+async def client_message_edit_handler(
+        client: Client,
+        edited_message: PyrogramMessage
+):
+    async with context.db.async_session() as session:
+        async with session.begin():
+            da = DatabaseAccess(session)
+            await da.update_message(edited_message)

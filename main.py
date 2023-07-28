@@ -7,13 +7,13 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvloop
 import uvicorn
-from broadcaster import Broadcast
 
 # Telegram
 from pyrogram import Client
 from pyrogram.handlers import (
     MessageHandler,
-    DeletedMessagesHandler
+    DeletedMessagesHandler,
+    EditedMessageHandler
 )
 
 # 程序内模块
@@ -97,12 +97,12 @@ async def startup_event():
         app_version='ZhubiApp ' + app_version,
     )
     # 添加消息处理器
-    context.client.add_handler(
-        MessageHandler(client_message_handler)
-    )
-    context.client.add_handler(
-        DeletedMessagesHandler(client_message_deletion_handler)
-    )
+    for handler in [
+        MessageHandler(client_message_handler),
+        DeletedMessagesHandler(client_message_deletion_handler),
+        EditedMessageHandler(client_message_edit_handler)
+    ]:
+        context.client.add_handler(handler)
     api.state.client = context.client
 
     # 连接数据库

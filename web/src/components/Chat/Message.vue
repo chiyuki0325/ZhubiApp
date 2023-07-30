@@ -1,6 +1,6 @@
 <script setup>
 import {useUserStore} from "@/store/chat"
-import {api} from "@/utils"
+import {api, useAuth} from "@/utils"
 import {messageType} from "@/config/enums"
 
 import PureTextMessage from "./PureTextMessage.vue"
@@ -18,8 +18,11 @@ const message = props.message
 const userStore = useUserStore()
 let user = userStore.getUser(message.sender_id)
 if (!user) {
-  user = await api.get(`/tg/user/${message.sender_id}/info`).then(res => {
-    if (res.data.code !== 200) {
+  user = await api.get(
+    `/tg/user/${message.sender_id}/info`,
+    useAuth()
+  ).then(res => {
+    if (res.status !== 200) {
       return null
     } else {
       userStore.addUser(res.data.user)

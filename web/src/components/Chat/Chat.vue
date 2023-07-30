@@ -4,12 +4,12 @@
 // 对新的 composition api 以及 pinia 状态管理组件支持缺失
 // 所以只能以 options api 来写这个组件
 
-import MessageWrapper from "./MessageWrapper.vue"
+import ChatList from "./ChatList.vue"
 
 export default {
   name: 'Chat',
   components: {
-    MessageWrapper
+    ChatList
   },
   mounted() {
     this.$connect()
@@ -18,5 +18,9 @@ export default {
 </script>
 
 <template>
-  <MessageWrapper/>
+  <Suspense>
+    <KeepAlive>
+      <ChatList />
+    </KeepAlive>
+  </Suspense>
 </template>

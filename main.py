@@ -20,6 +20,8 @@ from pyrogram.handlers import (
 import context
 from settings import settings, app_version, Settings
 from database.database import Database
+from database.access import DatabaseAccess
+import database.models
 from handlers import *
 
 # 外部模块
@@ -96,13 +98,6 @@ async def startup_event():
         api_hash=settings.telegram_api_hash,
         app_version='ZhubiApp ' + app_version,
     )
-    # 添加消息处理器
-    for handler in [
-        MessageHandler(client_message_handler),
-        DeletedMessagesHandler(client_message_deletion_handler),
-        EditedMessageHandler(client_message_edit_handler)
-    ]:
-        context.client.add_handler(handler)
     api.state.client = context.client
 
     # 连接数据库
@@ -121,6 +116,23 @@ async def startup_event():
         )
 
     await context.client.start()
+
+    logger.info('正在获取聊天列表 ...', style='bold')
+    async with context.db.async_session() as session:
+        async with session.begin():
+            da: DatabaseAccess = DatabaseAccess(session)
+            async for dialog in context.client.get_dialogs():
+                if (await da.get_chat_by_id(dialog.chat.id)) is None:
+                    await da.save_new_chat(dialog)
+
+    # 添加消息处理器
+    for handler in [
+        MessageHandler(client_message_handler),
+        DeletedMessagesHandler(client_message_deletion_handler),
+        EditedMessageHandler(client_message_edit_handler)
+    ]:
+        context.client.add_handler(handler)
+    logger.info('消息处理器已添加。', style='bold')
 
 
 def main():

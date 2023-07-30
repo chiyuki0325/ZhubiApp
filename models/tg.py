@@ -1,10 +1,14 @@
 from pydantic import BaseModel
 from typing import (
+    List,
     Dict,
     Optional as Opt
 )
 
 
 class TgUserInfoResponse(BaseModel):
-    code: int
-    user: Opt[Dict | None]
+    user: Dict
+
+
+class TgChatListResponse(BaseModel):
+    chats: List[Dict]

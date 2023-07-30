@@ -9,8 +9,11 @@ const routes = [
     children: [
       {
         path: '',
-        name: '聊天',
-        component: () => import(/* webpackChunkName: "home" */ '@/views/Chat.vue'),
+        component: () => import('@/views/Chat.vue'),
+      },
+      {
+        path: ':id',
+        component: () => import('@/views/Chat.vue'),
       },
     ],
   },
@@ -20,7 +23,6 @@ const routes = [
     children: [
       {
         path: '',
-        name: '登录',
         component: () => import('@/views/Login.vue'),
       }
     ]
@@ -31,7 +33,6 @@ const routes = [
     children: [
       {
         path: '',
-        name: '首页 (跳转)',
         component: () => import('@/views/Home.vue'),
       }
     ]

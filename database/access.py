@@ -2,11 +2,12 @@
 
 # 外部模块
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from datetime import datetime
 from pyrogram.types import (
     Message as PyrogramMessage,
     User as PyrogramUser,
+    Dialog as PyrogramDialog
 )
 from pyrogram.enums import (
     MessageMediaType
@@ -41,13 +42,16 @@ class DatabaseAccess:
         )).scalars().first()
         return chat
 
-    async def save_new_chat(self, message: PyrogramMessage) -> Chat:
+    async def get_all_chats(self) -> list[Chat]:
+        # 获取所有聊天对象
+        chats = (await self.session.execute(
+            select(Chat)
+        )).scalars().all()
+        return chats
+
+    async def save_new_chat(self, message: PyrogramMessage | PyrogramDialog) -> Chat | None:
         # 在第一次接收到来自某个聊天的消息时
         # 在数据库中创建聊天对象
-        logger.info(
-            f'创建新的聊天对象: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}',
-            alt=f'[bold]创建新的聊天对象[/]: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}'
-        )
         if message.chat.title is not None:
             # 群聊
             title = message.chat.title
@@ -57,7 +61,15 @@ class DatabaseAccess:
             try:
                 title = get_member_name(message.from_user)
             except Exception:
-                title = message.from_user.username
+                # noinspection PyBroadException
+                try:
+                    title = message.from_user.username
+                except Exception:
+                    return
+        if isinstance(message, PyrogramDialog):
+            pinned = message.is_pinned
+        else:
+            pinned = False
         chat = Chat(
             id=message.chat.id,
             type=message.chat.type,
@@ -65,10 +77,14 @@ class DatabaseAccess:
             username=message.chat.username,
             last_updated=datetime.now(),
             last_message_db_id=None,
-            pinned=False,
+            pinned=pinned,
             photo_file_id=get_attr(message.chat.photo, 'big_file_id')
         )
         self.session.add(chat)
+        logger.info(
+            f'创建新的聊天对象: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}',
+            alt=f'[bold]创建新的聊天对象[/]: {message.chat.id} {message.chat.type} {message.chat.title} {message.chat.username}'
+        )
         await self.flush()
         return chat
 
@@ -78,6 +94,13 @@ class DatabaseAccess:
         if message is not None:
             chat.last_message_db_id = message.id
         self.session.add(chat)
+        await self.flush()
+
+    async def delete_all_chats(self):
+        # 删除所有聊天
+        await self.session.execute(
+            delete(Chat)
+        )
         await self.flush()
 
     async def __serialize_message(self, message: PyrogramMessage) -> Message | None:
@@ -231,17 +254,38 @@ class DatabaseAccess:
 
     async def update_message(self, message: PyrogramMessage) -> Message | None:
         # 更新消息
-        fetched_message: Message | None = await self.get_message_by_obj(message)
-        if fetched_message is None:
+        message_to_edit: Message | None = await self.get_message_by_obj(message)
+        if message_to_edit is None:
             return
         serialized_message: Message | None = await self.__serialize_message(message)
         if serialized_message is None:
             return
-        db_id = fetched_message.id
-        serialized_message.id = db_id
-        self.session.add(serialized_message)
+        for attr in [
+            "type",
+            "unsupported_type",
+            "sender_id",
+            "sender_chat_id",
+            "chat_id",
+            "send_at",
+            "text",
+            "caption",
+            "mentioned",
+            "title",
+            "sticker",
+            "photo_id",
+            "photo_spoiler",
+            "system_message_type",
+            "system_message",
+            "outgoing",
+            "reply_to_tg_id",
+            "forward_from_user_name",
+            "forward_from_chat_name",
+            "via_bot_username",
+            "deleted",
+        ]:
+            setattr(message_to_edit, attr, getattr(serialized_message, attr))
+        self.session.add(message_to_edit)
         await self.flush()
-        return serialized_message
 
     async def get_user_by_id(self, user_id: int) -> User | None:
         # 获取用户对象

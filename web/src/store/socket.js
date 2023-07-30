@@ -1,6 +1,6 @@
 import {defineStore} from "pinia"
 import {operations} from "@/config/socket"
-import Cookies from "js-cookie";
+import Cookies from "js-cookie"
 
 export const useWebSocketStore = defineStore('websocket', {
   state: () => ({

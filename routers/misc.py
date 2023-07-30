@@ -32,5 +32,8 @@ async def get_media(
         )
         return Response(
             content=file_as_bytes,
-            media_type=mime_type
+            media_type=mime_type,
+            headers={
+                'Cache-Control': 'max-age=31536000'  # 一年
+            }
         )

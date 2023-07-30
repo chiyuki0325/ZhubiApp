@@ -4,12 +4,22 @@ import {defineStore} from 'pinia'
 
 export const useChatStore = defineStore('chat', {
   state: () => ({
-    chats: {},
-  })
+    chats: [],
+  }),
+  actions: {
+    setChats(chats) {
+      this.chats = chats
+    },
+    sortByDate() {
+      this.chats.sort((a, b) => {
+        return b.last_updated - a.last_updated
+      })
+    }
+  },
 })
 export const useMessageStore = defineStore('message', {
   state: () => ({
-    messages: [],
+    messages: []
   })
 })
 

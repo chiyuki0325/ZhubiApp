@@ -30,7 +30,7 @@ chatStore.sortByDate()
 </script>
 
 <template>
-  <div class="chat-list content-warp no-drag-area">
+  <div class="chat-list content-warp no-drag-area no-select">
     <v-navigation-drawer
       permanent
     >
@@ -61,5 +61,9 @@ chatStore.sortByDate()
 </template>
 
 <style scoped>
-
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
 </style>

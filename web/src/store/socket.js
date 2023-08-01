@@ -3,7 +3,7 @@ import {operations} from "@/config/socket"
 import Cookies from "js-cookie"
 
 // 其它 store
-import {useChatStore} from "@/store/chat"
+import {useMessageStore, useChatStore} from "@/store/chat"
 
 
 export const useWebSocketStore = defineStore('websocket', {
@@ -65,8 +65,9 @@ export const useWebSocketStore = defineStore('websocket', {
         case operations.new_message:
           // TODO
           // 首先是在对话列表里更新该对话的最新修改时间
-          console.log(data)
           useChatStore().touchChat(data)
+          // 然后是在消息列表里添加该消息
+          useMessageStore().addMessage(data)
       }
     },
     // 自动重连

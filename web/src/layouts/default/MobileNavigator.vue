@@ -1,15 +1,17 @@
 <script setup>
 
-import {computed, ref} from "vue"
+import {computed} from "vue"
 import navigatorItems from "@/config/navigator"
 import {storeToRefs} from "pinia"
 import {useSettingStore} from "@/store/app"
 
 const nav = computed(() => navigatorItems)
 const {tab} = storeToRefs(useSettingStore())
+
 function switchTab(selectedTab) {
   tab.value = selectedTab
 }
+
 // coding here
 </script>
 <template>
@@ -31,22 +33,27 @@ function switchTab(selectedTab) {
       :class="{
         'v-btn--selected': tab === item.val
       }"
-      >
+    >
       <div class="bar-icon rounded-xl">
         <v-icon>{{ item.icon }}</v-icon>
       </div>
 
-      <span class="bar-label">{{ item.title }}</span>
+      <span class="bar-label no-select">{{ item.title }}</span>
     </v-btn>
   </v-bottom-navigation>
 </template>
+
+
 <style scoped lang="scss">
+/*这段 scss 是抄的*/
 .app-bottom-nav {
   :deep(.v-bottom-navigation__content) {
     justify-content: space-evenly;
+
     .v-btn {
       .v-btn__content {
         gap: 4px;
+
         .bar-icon {
           width: 64px;
           height: 32px;
@@ -54,21 +61,26 @@ function switchTab(selectedTab) {
           align-items: center;
           justify-content: center;
           transition: background-color 0.3s ease;
+
           i {
             transition: all 0.3s ease;
           }
         }
+
         .bar-label {
           color: rgb(var(--v-theme-onSurfaceVariant));
         }
       }
+
       &.v-btn--selected {
         .bar-icon {
           background-color: rgb(var(--v-theme-secondaryContainer));
+
           i {
             color: rgb(var(--v-theme-onSurface));
           }
         }
+
         .bar-label {
           color: rgb(var(--v-theme-onSurface));
         }
@@ -76,5 +88,12 @@ function switchTab(selectedTab) {
     }
   }
 }
-/* scoped css */
+</style>
+
+<style scoped>
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
 </style>

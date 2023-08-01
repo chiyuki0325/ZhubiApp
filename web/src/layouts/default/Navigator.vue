@@ -29,7 +29,7 @@ function switchTab(selectedTab) {
       <drawer-toggle/>
     </div>
 
-    <div class="content-warp flex-fill no-drag-area" :class="{ 'rail-nav': rail }">
+    <div class="content-warp flex-fill no-drag-area no-select" :class="{ 'rail-nav': rail }">
       <v-list class="list-content d-flex flex-column justify-center" rounded :nav="true">
         <v-list-item
           v-for="item in nav"
@@ -53,3 +53,11 @@ function switchTab(selectedTab) {
     </div>
   </v-navigation-drawer>
 </template>
+
+<style scoped>
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+</style>

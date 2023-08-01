@@ -34,3 +34,7 @@ export function isShowChat(chatType, tab) {
     case 'bot': return chatType === 'bot'
   }
 }
+
+export function prettifyName(user) {
+  return (user.first_name + ' ' + (user.last_name || '')).trim()
+}

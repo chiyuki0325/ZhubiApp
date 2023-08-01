@@ -2,6 +2,10 @@ import {defineStore} from "pinia"
 import {operations} from "@/config/socket"
 import Cookies from "js-cookie"
 
+// 其它 store
+import {useChatStore} from "@/store/chat"
+
+
 export const useWebSocketStore = defineStore('websocket', {
   state: () => ({
     socket: null,
@@ -59,8 +63,10 @@ export const useWebSocketStore = defineStore('websocket', {
           }
           break
         case operations.new_message:
-          //TODO
+          // TODO
+          // 首先是在对话列表里更新该对话的最新修改时间
           console.log(data)
+          useChatStore().touchChat(data)
       }
     },
     // 自动重连

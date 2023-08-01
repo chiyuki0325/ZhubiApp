@@ -1,5 +1,6 @@
 // Utilities
 import {defineStore} from 'pinia'
+import {api, useAuth, prettifyName} from '@/utils'
 
 
 export const useChatStore = defineStore('chat', {
@@ -12,10 +13,28 @@ export const useChatStore = defineStore('chat', {
     },
     sortByDate() {
       this.chats.sort((a, b) => {
-        return b.last_updated - a.last_updated
+        return new Date(b.last_updated) - new Date(a.last_updated)
       })
-    }
-  },
+    },
+    async touchChat(message) {
+      // 更新修改时间
+      const {chat_id, last_updated, id} = message
+      const chat = this.chats.find(chat => chat.id === chat_id)
+      if (chat) {
+        chat.last_updated = last_updated
+        chat.last_message_db_id = id
+        // TODO: 在此处就渲染消息
+        // TODO: 用户
+        chat.last_message = message.text || message.caption || message.sticker?.emoji || message.system_message || '[消息]'
+        const userStore = useUserStore()
+        userStore.tryFetchUser(message.sender_id).then(() => {
+          const user = userStore.getUser(message.sender_id)
+          chat.last_message_sender = prettifyName(user)
+          this.sortByDate()
+        })
+      }
+    },
+  }
 })
 export const useMessageStore = defineStore('message', {
   state: () => ({
@@ -23,20 +42,31 @@ export const useMessageStore = defineStore('message', {
   })
 })
 
-export const useUserStore = defineStore('chat', {
+export const useUserStore = defineStore('user', {
   state: () => ({
-    users: {},
+    users: []
   }),
   actions: {
     addUser(user) {
-      this.users[user.id] = user
+      this.users.push(user)
+    },
+    async tryFetchUser(user_id) {
+      if (this.users.find(user => user.id === user_id)) return
+      await api.get(
+        `/tg/user/${user_id}/info`,
+        useAuth()
+      ).then(res => {
+        if (res.status !== 200) {
+          console.error(res)
+        } else {
+          this.addUser(res.data.user)
+        }
+      })
     }
   },
   getters: {
     getUser: (state) => {
-      return (id) => {
-        return state.users[id]
-      }
+      return (user_id) => state.users.find(user => user.id === user_id)
     }
   }
 })

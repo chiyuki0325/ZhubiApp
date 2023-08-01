@@ -16,21 +16,8 @@ const message = props.message
 
 // 获取用户信息
 const userStore = useUserStore()
+await userStore.tryFetchUser(message.sender_id)
 let user = userStore.getUser(message.sender_id)
-if (!user) {
-  user = await api.get(
-    `/tg/user/${message.sender_id}/info`,
-    useAuth()
-  ).then(res => {
-    if (res.status !== 200) {
-      return null
-    } else {
-      userStore.addUser(res.data.user)
-      return res.data.user
-    }
-  })
-}
-const isNoUser = !user
 
 
 </script>

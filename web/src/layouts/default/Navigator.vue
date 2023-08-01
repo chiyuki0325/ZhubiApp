@@ -5,6 +5,7 @@ import {useSettingStore} from '@/store/app'
 import navigatorItems from '@/config/navigator'
 
 // 组件
+import ThemeSwitcher from "@/components/ThemeSwitcher.vue"
 import DrawerToggle from "@/components/toggle/DrawerToggle.vue"
 
 const {rail, tab} = storeToRefs(useSettingStore())
@@ -51,6 +52,14 @@ function switchTab(selectedTab) {
         </v-list-item>
       </v-list>
     </div>
+
+
+    <template v-slot:append>
+      <div class="px-3 pt-1 mt-1">
+        <theme-switcher/>
+      </div>
+      <div class="px-3 pt-1 mt-1"></div>
+    </template>
   </v-navigation-drawer>
 </template>
 

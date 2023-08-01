@@ -1,5 +1,6 @@
 <script setup>
 import ChatListItem from "./ChatListItem.vue"
+import ThemeSwitcher from "@/components/ThemeSwitcher.vue"
 import {computed} from "vue"
 import {storeToRefs} from "pinia"
 import {useChatStore} from "@/store/chat"
@@ -41,8 +42,11 @@ chatStore.sortByDate()
       :rail="xs ? chatListRail : false"
       :width="xs ? '100vw' : 300"
     >
-    <div class="px-3 pt-1 mt-1 chat-list-toggle" v-if="xs">
-      <chat-list-toggle />
+    <div class="px-3 pt-1 mt-1" v-if="xs">
+      <v-row justify="start">
+        <chat-list-toggle />
+        <theme-switcher />
+      </v-row>
     </div>
 
       <!-- 置顶聊天 -->

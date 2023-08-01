@@ -7,7 +7,7 @@ router = APIRouter(
 )
 
 for router_module in [
-    'chat', 'user'
+    'chat', 'user', 'message'
 ]:
     router.include_router(
         importlib.import_module('routers.tg_routers.' + router_module).router

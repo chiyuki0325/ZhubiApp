@@ -39,7 +39,31 @@ export const useChatStore = defineStore('chat', {
 export const useMessageStore = defineStore('message', {
   state: () => ({
     messages: []
-  })
+  }),
+  actions: {
+    addMessage(message) {
+      this.messages.push(message)
+    },
+    async tryFetchMessageByDbId(db_id) {
+      if (!db_id) return
+      if (this.messages.find(message => message.id === db_id)) return
+      await api.get(
+        `/tg/message/by_db_id/${db_id}`,
+        useAuth()
+      ).then(res => {
+        if (res.status !== 200) {
+          console.error(res)
+        } else {
+          this.addMessage(res.data.message)
+        }
+      })
+    }
+  },
+  getters: {
+    getMessageByDbId: (state) => {
+      return (db_id) => state.messages.find(message => message.id === db_id)
+    }
+  }
 })
 
 export const useUserStore = defineStore('user', {
@@ -51,6 +75,7 @@ export const useUserStore = defineStore('user', {
       this.users.push(user)
     },
     async tryFetchUser(user_id) {
+      if (!user_id) return
       if (this.users.find(user => user.id === user_id)) return
       await api.get(
         `/tg/user/${user_id}/info`,

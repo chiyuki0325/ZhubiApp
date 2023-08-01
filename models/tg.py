@@ -12,3 +12,7 @@ class TgUserInfoResponse(BaseModel):
 
 class TgChatListResponse(BaseModel):
     chats: List[Dict]
+
+
+class TgMessageResponse(BaseModel):
+    message: Dict

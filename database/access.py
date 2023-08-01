@@ -331,6 +331,20 @@ class DatabaseAccess:
         )).scalars().first()
         return message
 
+    async def get_message_by_tg_id(self, chat_id: int, tg_id: int) -> Message | None:
+        # 获取消息对象
+        message: Message | None = (await self.session.execute(
+            select(Message).where(Message.tg_id == tg_id and Message.chat_id == chat_id)
+        )).scalars().first()
+        return message
+
+    async def get_message_by_db_id(self, db_id: int) -> Message | None:
+        # 获取消息对象
+        message: Message | None = (await self.session.execute(
+            select(Message).where(Message.id == db_id)
+        )).scalars().first()
+        return message
+
     async def delete_message(self, message: PyrogramMessage):
         # 删除消息
         message: Message | None = await self.get_message_by_obj(message)

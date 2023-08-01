@@ -7,11 +7,16 @@ import {useChatStore} from "@/store/chat"
 import {useSettingStore} from "@/store/app"
 import {api, useAuth, isShowChat} from "@/utils"
 import {useRouter} from "vue-router"
+import ChatListToggle from "@/components/toggle/ChatListToggle.vue"
+import {useDisplay} from "vuetify"
+
+const display = useDisplay()
+const {xs} = display
 
 const chatStore = useChatStore()
 const {chats} = storeToRefs(chatStore)
 
-const {tab} = storeToRefs(useSettingStore())
+const {tab, chatListRail} = storeToRefs(useSettingStore())
 
 const router = useRouter()
 
@@ -33,7 +38,13 @@ chatStore.sortByDate()
   <div class="chat-list content-warp no-drag-area no-select">
     <v-navigation-drawer
       permanent
+      :rail="chatListRail"
+      :width="xs ? '100vw' : 300"
     >
+    <div class="px-3 pt-1 mt-1 chat-list-toggle" v-if="xs">
+      <chat-list-toggle />
+    </div>
+
       <!-- 置顶聊天 -->
       <v-list class="list-content d-flex flex-column justify-center" rounded :nav="true">
         <template

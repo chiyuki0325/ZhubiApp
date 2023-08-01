@@ -49,5 +49,4 @@ const subtitle = computed(() => {
 </template>
 
 <style scoped>
-
 </style>

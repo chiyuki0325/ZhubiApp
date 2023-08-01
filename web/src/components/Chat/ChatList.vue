@@ -1,8 +1,7 @@
 <script setup>
 import ChatListItem from "./ChatListItem.vue"
-
+import {computed} from "vue"
 import {storeToRefs} from "pinia"
-
 import {useChatStore} from "@/store/chat"
 import {useSettingStore} from "@/store/app"
 import {api, useAuth, isShowChat} from "@/utils"
@@ -32,13 +31,14 @@ try {
 }
 chatStore.setChats(chatsToSet)
 chatStore.sortByDate()
+
 </script>
 
 <template>
   <div class="chat-list content-warp no-drag-area no-select">
     <v-navigation-drawer
       permanent
-      :rail="chatListRail"
+      :rail="xs ? chatListRail : false"
       :width="xs ? '100vw' : 300"
     >
     <div class="px-3 pt-1 mt-1 chat-list-toggle" v-if="xs">

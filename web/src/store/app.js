@@ -14,13 +14,4 @@ export const useThemeStore = defineStore('theme', {
   state: () => ({
     theme: useLocalStorage('theme', 'BlueMountainsLight', {mergeDefaults: true}),
   }),
-  actions: {
-    switchDarkTheme() {
-      if (this.theme.includes('Dark')) {
-        this.theme = this.theme.replace('Dark', 'Light')
-      } else {
-        this.theme = this.theme.replace('Light', 'Dark')
-      }
-    }
-  }
 })

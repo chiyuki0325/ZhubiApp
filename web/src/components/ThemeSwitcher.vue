@@ -1,22 +1,17 @@
 <script setup>
-import {computed} from 'vue'
+import {storeToRefs} from "pinia"
 import themes from '@/plugins/themes'
 import {useTheme} from 'vuetify'
 import {useThemeStore} from '@/store/app'
 
 const theme = useTheme()
-const themeStore = useThemeStore()
-
-const themeList = computed(() => {
-  const themeList = []
-  for (const key in themes) {
-    themeList.push()
-  }
-  return themeList
-})
+const themeStoreRef = storeToRefs(useThemeStore())
 
 function themeName(themeId) {
   return themeId.replace(/([A-Z])/g, ' $1').trim()
+}
+function updateTheme() {
+  themeStoreRef.theme.value = theme.global.name.value
 }
 </script>
 
@@ -53,6 +48,7 @@ function themeName(themeId) {
             <v-radio-group
                 column
                 v-model="theme.global.name.value"
+                v-on:update:model-value="updateTheme"
             >
               <v-radio
                   v-for="theme in themes"
